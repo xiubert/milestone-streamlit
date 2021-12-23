@@ -41,7 +41,12 @@ if st.session_state.tickerInput == "":
     st.write("Enter a ticker symbol...")
     st.stop()
 
-df = get_tickerData(sticker)
+try:
+    df = get_tickerData(sticker)
+except:
+    st.write("Invalid or unrecognized stock ticker symbol")
+    st.stop()
+    
 yearOpts = df.index.year.unique()[::-1]
 
 with st.form(key='yearFirst'):
