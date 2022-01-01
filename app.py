@@ -27,12 +27,26 @@ def get_tickerData(sticker,key=alphaAPI):
 @st.cache
 def plotTickerMo(year, month, ticker):
     monthN=datetime.datetime.strptime(month, "%B").month
-    data = df.iloc[np.logical_and(df.index.month==monthN,df.index.year==year)]
+    tData = df.iloc[np.logical_and(df.index.month==monthN,df.index.year==year)]
 
-    fig = px.line(data, x=data.index, y="4. close", title=f'Daily closing prices for {ticker} in {month} of {year}',
-             labels={
+    expWeightWindow = 10
+    fig = px.scatter(tData, x=tData.index, y="4. close", trendline="ewm",trendline_options=dict(span=expWeightWindow),
+        opacity=0,
+        title=f'Daily closing prices for {ticker} in {month} of {year}<br> with {expWeightWindow} day exponentially weighted window fit',
+        labels={
                      "index": "Date",
                      "4. close": "closing price (USD)"})
+
+    tr_line=[]
+    for  k, trace  in enumerate(fig.data):
+            if trace.mode is not None and trace.mode == 'lines':
+                tr_line.append(k)
+    
+    for id in tr_line:
+        fig.data[id].update(line_dash='dot',line_color='gray')
+
+    fig.add_traces(list(px.line(tData, x=tData.index, y="4. close", markers=True).select_traces()))
+
     return fig
 
 sticker = st.text_input('Stock Ticker Symbol:',key="tickerInput")
